@@ -12,6 +12,7 @@ _SPEC_REGISTRY = {}
 
 ################################################################################
 
+
 class ArgParseSpec:
     """
     A class defining *type* default behavior of argument-parser args ("action fields")
@@ -23,9 +24,17 @@ class ArgParseSpec:
 
     EMPTY = object()
 
-    def __init__(self,
-                 names=EMPTY, default=EMPTY, from_string=None, post_process=EMPTY,
-                 choices=EMPTY, help=EMPTY, metavar=EMPTY, completer=EMPTY):
+    def __init__(
+        self,
+        names=EMPTY,
+        default=EMPTY,
+        from_string=None,
+        post_process=EMPTY,
+        choices=EMPTY,
+        help=EMPTY,
+        metavar=EMPTY,
+        completer=EMPTY,
+    ):
         self.names = names
         self.default = default
         self.from_string = from_string
@@ -41,13 +50,13 @@ class ArgParseSpec:
 
 
 def find_spec(cls):
-    # first try the registy
+    # first try the registry
     try:
         return _SPEC_REGISTRY[cls]
     except KeyError:
         pass
     # look for __argparse__ attribute:
-    spec = getattr(cls, '__argparse__', None)
+    spec = getattr(cls, "__argparse__", None)
     if spec is not None:
         return to_spec(spec)
     # we can generate sensible specs for some types on the fly:
@@ -71,7 +80,7 @@ def to_spec(spec):
     if isinstance(spec, ArgParseSpec):
         return spec
     if isinstance(spec, type):
-        attr_dict = {k: v for k, v in spec.__dict__.items() if not k.startswith('_')}
+        attr_dict = {k: v for k, v in spec.__dict__.items() if not k.startswith("_")}
     else:
         attr_dict = dict(spec)
     return ArgParseSpec(**attr_dict)
@@ -89,8 +98,8 @@ def gen_type_spec(cls, **kwargs):
 ################################################################################
 # enum support
 
-class _EnumValueType:
 
+class _EnumValueType:
     def __init__(self, enum_cls):
         self.enum_cls = enum_cls
 
@@ -103,7 +112,7 @@ class _EnumValueType:
 
     @property
     def __name__(self):
-        # defiend for nicer error messages
+        # defined for nicer error messages
         return self.enum_cls.__name__
 
     @property
@@ -118,7 +127,7 @@ def gen_enum_spec(cls, **kwargs):
         names=[enum_value_type.__name__.lower()],
         from_string=enum_value_type,
         choices=list(cls),
-        help='/'.join(strings),
+        help="/".join(strings),
         completer=lambda *a, **kw: strings,
     )
     kw.update(kwargs)

@@ -14,6 +14,7 @@ from .spec import register_spec
 ################################################################################
 # fileinput
 
+
 class FileInputType:
     """
     A ``fileinput`` arg type.
@@ -35,7 +36,7 @@ class FileInputType:
             This is a shorter way of passing
         """
         if decompress:
-            kwargs.setdefault('openhook', hook_compressed)
+            kwargs.setdefault("openhook", hook_compressed)
         self.kwargs = kwargs
 
     def get_fileinput(self, files):
@@ -44,9 +45,9 @@ class FileInputType:
     @property
     def __argparse__(self):
         return dict(
-            names=['infiles'],
+            names=["infiles"],
             post_process=self.get_fileinput,
-            metavar='INFILE',
+            metavar="INFILE",
         )
 
 
@@ -55,7 +56,7 @@ fileinput = FileInputType
 
 def open_compressed(filename, mode):
     """
-    An alternative implemenation for ``fileinput.hook_compressed``, which partially
+    An alternative implementation for ``fileinput.hook_compressed``, which partially
     works around Issue5758 ("fileinput.hook_compressed returning bytes from gz file").
     """
     ext = os.path.splitext(filename)[1]
@@ -65,16 +66,18 @@ def open_compressed(filename, mode):
         # The mode argument can be "r", "rb", "w", "wb", "x", "xb", "a" or "ab" for
         # binary mode, or "rt", "wt", "xt" or "at" for text mode. The default mode is
         # "rb".
-        if mode in 'rwxa':
-            return mode + 't'
+        if mode in "rwxa":
+            return mode + "t"
         else:
             return mode
 
-    if ext == '.gz':
+    if ext == ".gz":
         import gzip
+
         return gzip.open(filename, fix_mode(mode))
-    elif ext == '.bz2':
+    elif ext == ".bz2":
         import bz2
+
         return bz2.BZ2File(filename, fix_mode(mode))
     else:
         return open(filename, mode)
@@ -85,6 +88,7 @@ hook_compressed = open_compressed
 
 ################################################################################
 # FileType
+
 
 class LazyOpenFile:
     """
@@ -97,7 +101,7 @@ class LazyOpenFile:
     until/unless being accessed.
     """
 
-    def __init__(self, file, mode='r', *args, **kwargs):
+    def __init__(self, file, mode="r", *args, **kwargs):
         self.__dict__.update(
             _file=file,
             _mode=mode,
@@ -131,19 +135,19 @@ class LazyOpenFile:
     def _check(self):
         mode = self._mode[0]
         f = self._file
-        if mode == 'r':
+        if mode == "r":
             # read mode, open and close, and raise if fails:
             with self._raw_open():
                 pass
         else:
             # write mode
-            if (not _is_writeable(f)) or (mode == 'x' and os.path.exists(f)):
+            if (not _is_writeable(f)) or (mode == "x" and os.path.exists(f)):
                 # not writeable
                 self._raw_open()  # should raise
-                assert 0, 'should have raised already'
+                assert 0, "should have raised already"
 
     def __repr__(self):
-        return '<%s %r %r>' % (type(self).__name__, self._flle, self._mode)
+        return "<%s %r %r>" % (type(self).__name__, self._flle, self._mode)
 
 
 class FileType(_ap.FileType):
@@ -151,17 +155,19 @@ class FileType(_ap.FileType):
     Same as ``argparse.FileType``, but in write-mode (w/a/x), the file
     is opened lazily, to avoid creating a file before we actually need to.
 
-    The lazy functionality is implementeed in ``LazyOpenFile``.
+    The lazy functionality is implemented in ``LazyOpenFile``.
     """
 
     def __call__(self, string):
-        is_write = self._mode and self._mode[0] in 'wax'
-        if string == '-' or not is_write:
+        is_write = self._mode and self._mode[0] in "wax"
+        if string == "-" or not is_write:
             return super().__call__(string)
 
         # all other arguments are used as file names
         try:
-            return LazyOpenFile(string, self._mode, self._bufsize, self._encoding, self._errors)
+            return LazyOpenFile(
+                string, self._mode, self._bufsize, self._encoding, self._errors
+            )
         except OSError as e:
             message = _ap._("can't open '%s': %s")
             raise _ap.ArgumentTypeError(message % (string, e))
@@ -182,7 +188,7 @@ def _is_writeable(fnm):
     # target does not exist, check perms on parent dir
     pdir = os.path.dirname(fnm)
     if not pdir:
-        pdir = '.'
+        pdir = "."
     # target is creatable if parent dir is writable
     return os.access(pdir, os.W_OK)
 
@@ -191,17 +197,17 @@ def _is_writeable(fnm):
 # Pickle types
 
 
-def _read_pickle(fn, mode='rb'):
+def _read_pickle(fn, mode="rb"):
     with open_compressed(fn, mode) as F:
         return pickle.load(F)
 
 
 register_spec(
-    'pickled_data',
+    "pickled_data",
     dict(
         from_string=_read_pickle,
-        metavar='PKL_FILE',
-        help='pickle file (optionally compressed)'
+        metavar="PKL_FILE",
+        help="pickle file (optionally compressed)",
     ),
 )
 

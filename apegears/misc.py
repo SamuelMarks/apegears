@@ -1,5 +1,5 @@
 """
-Private definitions of actions, types, etc. used in this pacakge.
+Private definitions of actions, types, etc. used in this package.
 """
 
 import argparse as _ap
@@ -9,6 +9,7 @@ import copy as _copy
 ################################################################################
 # custom actions
 
+
 class _ExtendAction(_ap.Action):
     """
     Definition of an "extend" action, similar idea to "append" action.
@@ -16,9 +17,9 @@ class _ExtendAction(_ap.Action):
 
     def __init__(self, nargs=None, **kwargs):
         if nargs == 0:
-            raise ValueError('nargs for extend actions must be > 0')
-        if 'const' in kwargs:
-            raise ValueError('const= does not apply to extend actions')
+            raise ValueError("nargs for extend actions must be > 0")
+        if "const" in kwargs:
+            raise ValueError("const= does not apply to extend actions")
         super().__init__(nargs=nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -35,9 +36,9 @@ class _SetItemAction(_ap.Action):
 
     def __init__(self, nargs=None, key_type=str, **kwargs):
         if nargs == 0:
-            raise ValueError('nargs for setitem actions must be > 0')
-        if 'const' in kwargs:
-            raise ValueError('const= does not apply to setitem actions')
+            raise ValueError("nargs for setitem actions must be > 0")
+        if "const" in kwargs:
+            raise ValueError("const= does not apply to setitem actions")
         super().__init__(nargs=nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -50,15 +51,22 @@ class _SetItemAction(_ap.Action):
 ################################################################################
 # custom types
 
+
 class _KeyValueType:
     """
     Definition of a key-value type, whose value represents an item in a dict.
     Used by dict-options (``ArgumentParser.add_dict``).
     """
 
-    def __init__(self,
-                 key_type=None, value_type=None, *,
-                 delim='=', key_metavar=None, value_metavar=None):
+    def __init__(
+        self,
+        key_type=None,
+        value_type=None,
+        *,
+        delim="=",
+        key_metavar=None,
+        value_metavar=None
+    ):
         self.key_type = key_type
         self.key_metavar = key_metavar
         self.value_type = value_type
@@ -67,21 +75,21 @@ class _KeyValueType:
 
         for t in [self.key_type, self.value_type]:
             if t is not None and not callable(t):
-                raise ValueError('%r is not callable' % t)
+                raise ValueError("%r is not callable" % t)
 
     def get_metavar(self):
         key_mv = self.key_metavar
         if key_mv is None:
-            key_mv = self._type_metavar(self.key_type, 'KEY')
+            key_mv = self._type_metavar(self.key_type, "KEY")
         value_mv = self.value_metavar
         if value_mv is None:
-            value_mv = self._type_metavar(self.value_type, 'VALUE')
-        return '%s%s%s' % (key_mv, self.delim, value_mv)
+            value_mv = self._type_metavar(self.value_type, "VALUE")
+        return "%s%s%s" % (key_mv, self.delim, value_mv)
 
     def __call__(self, arg_string):
         key, delim, value = arg_string.partition(self.delim)
         if not delim:
-            raise ValueError('invalid key=value string: %r' % arg_string)
+            raise ValueError("invalid key=value string: %r" % arg_string)
         if self.key_type is not None:
             key = self.key_type(key)
         if self.value_type is not None:
@@ -89,16 +97,16 @@ class _KeyValueType:
         return (key, value)
 
     def __repr__(self):
-        # defiend for nicer error messages
-        return '%s=%s' % (
-            self._type_metavar(self.key_type, 'KEY'),
-            self._type_metavar(self.value_type, 'VALUE'),
+        # defined for nicer error messages
+        return "%s=%s" % (
+            self._type_metavar(self.key_type, "KEY"),
+            self._type_metavar(self.value_type, "VALUE"),
         )
 
     def _type_metavar(self, t, default=None):
         if t is None:
             return default
-        return '%s' % getattr(t, '__name__', t)
+        return "%s" % getattr(t, "__name__", t)
 
 
 def _ensure_value(namespace, name, value):
@@ -109,6 +117,7 @@ def _ensure_value(namespace, name, value):
 
 ################################################################################
 # workaround append-with-nonempty-default issue (https://bugs.python.org/issue16399):
+
 
 class _StrictDefaultActionWrapper(_ap.Action):
     """

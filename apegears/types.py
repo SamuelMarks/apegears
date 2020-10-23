@@ -24,18 +24,19 @@ from .spec import register_spec
 ################################################################################
 # range
 
+
 def _parse_range(s):
-    parts = [int(x) for x in s.split(':')]
+    parts = [int(x) for x in s.split(":")]
     return range(*parts)
 
 
-for _x in [range, 'range']:
+for _x in [range, "range"]:
     register_spec(
         _x,
         dict(
             from_string=_parse_range,
-            metavar='RANGE',
-            help='a range (START:STOP or START:STOP:STEP)'
+            metavar="RANGE",
+            help="a range (START:STOP or START:STOP:STEP)",
         ),
     )
 
@@ -43,8 +44,8 @@ for _x in [range, 'range']:
 ################################################################################
 # datetime.date and datetime.datetime
 
-DATE_FORMAT = '%Y-%m-%d'
-BASE_DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S'
+DATE_FORMAT = "%Y-%m-%d"
+BASE_DATETIME_FORMAT = DATE_FORMAT + "T%H:%M:%S"
 
 
 def _parse_date(s):
@@ -53,10 +54,10 @@ def _parse_date(s):
 
 def _parse_datetime(s):
     PATTERNS = [
-        '%s%s%s' % (base, milli, z)
+        "%s%s%s" % (base, milli, z)
         for base in [BASE_DATETIME_FORMAT]
-        for milli in ['', '.%f']
-        for z in ['', 'Z']
+        for milli in ["", ".%f"]
+        for z in ["", "Z"]
     ]
     for p in PATTERNS:
         try:
@@ -66,26 +67,26 @@ def _parse_datetime(s):
     raise ValueError(s)
 
 
-for _x in [datetime.date, 'date']:
+for _x in [datetime.date, "date"]:
     register_spec(
         _x,
         dict(
-            names=['date', 'd'],
+            names=["date", "d"],
             from_string=_parse_date,
-            metavar='DATE',
-            help='a date (YYYY-MM-DD)'
+            metavar="DATE",
+            help="a date (YYYY-MM-DD)",
         ),
     )
 
 
-for _x in [datetime.datetime, 'datetime']:
+for _x in [datetime.datetime, "datetime"]:
     register_spec(
         _x,
         dict(
-            names=['timestamp', 't'],
+            names=["timestamp", "t"],
             from_string=_parse_datetime,
-            metavar='TIMESTAMP',
-            help='a timestamp (ISO 8601: YYYY-MM-DDTHH:MM:SS[.micros][Z])'
+            metavar="TIMESTAMP",
+            help="a timestamp (ISO 8601: YYYY-MM-DDTHH:MM:SS[.micros][Z])",
         ),
     )
 
@@ -93,19 +94,20 @@ for _x in [datetime.datetime, 'datetime']:
 ################################################################################
 # pathlib.Path
 
-for _x in [pathlib.Path, 'path']:
+for _x in [pathlib.Path, "path"]:
     register_spec(
         _x,
         dict(
-            names=['path'],
+            names=["path"],
             from_string=pathlib.Path,
-            metavar='PATH',
+            metavar="PATH",
         ),
     )
 
 
 ################################################################################
 # log level
+
 
 def _parse_log_level(s):
     val = None
@@ -130,11 +132,11 @@ def _parse_log_level(s):
 
 
 register_spec(
-    'log_level',
+    "log_level",
     dict(
-        names=['log-level', 'L'],
+        names=["log-level", "L"],
         from_string=_parse_log_level,
-        metavar='LOG_LEVEL',
+        metavar="LOG_LEVEL",
     ),
 )
 
@@ -143,12 +145,12 @@ register_spec(
 # regex
 
 register_spec(
-    'regex',
+    "regex",
     dict(
-        names=['regex'],
+        names=["regex"],
         from_string=re.compile,
-        metavar='REGEX',
-        help='a regular expression',
+        metavar="REGEX",
+        help="a regular expression",
     ),
 )
 
@@ -157,12 +159,12 @@ register_spec(
 # IP address / hostname
 
 register_spec(
-    'ipaddress',
+    "ipaddress",
     dict(
-        names=['ip'],
+        names=["ip"],
         from_string=ipaddress.ip_address,
-        metavar='IP',
-        help='an IP address, e.g. "192.168.0.1" or "2001:db8::"'
+        metavar="IP",
+        help='an IP address, e.g. "192.168.0.1" or "2001:db8::"',
     ),
 )
 
@@ -183,12 +185,8 @@ def _parse_literal(s):
 
 
 register_spec(
-    'literal',
-    dict(
-        from_string=_parse_literal,
-        metavar='LITERAL',
-        help='a python literal'
-    ),
+    "literal",
+    dict(from_string=_parse_literal, metavar="LITERAL", help="a python literal"),
 )
 
 

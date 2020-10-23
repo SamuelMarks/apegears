@@ -11,7 +11,12 @@ try:
 except ImportError:
     argcomplete = None  # argcomplete not installed
 
-from .misc import _ExtendAction, _SetItemAction, _KeyValueType, _StrictDefaultActionWrapper
+from .misc import (
+    _ExtendAction,
+    _SetItemAction,
+    _KeyValueType,
+    _StrictDefaultActionWrapper,
+)
 from .spec import find_spec as _find_spec
 from .lo99ing import add_log_levels_option
 
@@ -24,6 +29,7 @@ CALLER_DOC = ...
 
 ################################################################################
 # Our ArgumentParser class
+
 
 class ArgumentParser(_ap.ArgumentParser):
     """
@@ -57,14 +63,14 @@ class ArgumentParser(_ap.ArgumentParser):
         """
         # generate description:
         if description is CALLER_DOC:
-            description = self._generate_descrption(stack_depth=1)
+            description = self._generate_description(stack_depth=1)
 
         # call super:
         super().__init__(*args, description=description, **kwargs)
 
         # register our actions
-        self.register('action', 'extend', _ExtendAction)
-        self.register('action', 'setitem', _SetItemAction)
+        self.register("action", "extend", _ExtendAction)
+        self.register("action", "setitem", _SetItemAction)
 
         # add default options
         if log_levels or log_levels is None:
@@ -100,9 +106,9 @@ class ArgumentParser(_ap.ArgumentParser):
     ################################################################################
     # add_argument()
 
-    def add_argument(self, *args,
-                     strict_default=False, post_process=None, completer=None,
-                     **kwargs):
+    def add_argument(
+        self, *args, strict_default=False, post_process=None, completer=None, **kwargs
+    ):
         """
         :param strict_default: whether to enable workaround issue16399
         :param post_process: a callable to apply to the argument post-parsing, in place
@@ -111,17 +117,17 @@ class ArgumentParser(_ap.ArgumentParser):
 
         # workaround append-with-nonempty-default issue (https://bugs.python.org/issue16399):
         if strict_default:
-            action = self._get_strict_default_action(kwargs.get('action'))
+            action = self._get_strict_default_action(kwargs.get("action"))
             if action is not None:
-                kwargs['action'] = action
+                kwargs["action"] = action
 
         # metavar defaulting
-        metavar = kwargs.get('metavar')
-        type = kwargs.get('type')
+        metavar = kwargs.get("metavar")
+        type = kwargs.get("type")
         if metavar is None and type is not None:
-            type_metavar = getattr(type, '__metavar__', None)
+            type_metavar = getattr(type, "__metavar__", None)
             if type_metavar is not None:
-                kwargs['metavar'] = type_metavar
+                kwargs["metavar"] = type_metavar
 
         # call super:
         action = super().add_argument(*args, **kwargs)
@@ -149,37 +155,34 @@ class ArgumentParser(_ap.ArgumentParser):
 
         names, kwargs = self._process_positional(name, **kwargs)
 
-        nargs = kwargs.pop('nargs', None)
-        if 'default' in kwargs:
+        nargs = kwargs.pop("nargs", None)
+        if "default" in kwargs:
             # a positional with a default value
             if nargs is None:
-                nargs = '?'
-            if nargs != '?':
+                nargs = "?"
+            if nargs != "?":
                 raise ValueError(
-                    'nargs=%s does not apply to a positional with a default value' % nargs)
+                    "nargs=%s does not apply to a positional with a default value"
+                    % nargs
+                )
 
-        return self.add_argument(
-            *names,
-            action=None,
-            nargs=nargs,
-            **kwargs
-        )
+        return self.add_argument(*names, action=None, nargs=nargs, **kwargs)
 
     def add_optional(self, *flags, **kwargs):
         """
         Add an *optional* parameter.  This calls ``add_argument`` with appropriate values.
 
         :param flags:
-            supports flags with prefix ("-", "--") omitted. Prefix will be added automaticallly.
+            supports flags with prefix ("-", "--") omitted. Prefix will be added automatically.
         :param kwargs:
             supports all kwargs supported by ``add_argument``.
 
         :note: "optional" is ``argparse``'s way of saying "non-positional".  An "optional" argument
-            is non-positional, but is not necessarilly *optional*, i.e. you can set required=True.
+            is non-positional, but is not necessarily *optional*, i.e. you can set required=True.
         """
         flags, kwargs = self._use_spec(*flags, is_positional=False, **kwargs)
         if not flags:
-            raise ValueError('name not supplied for optional')
+            raise ValueError("name not supplied for optional")
         flags = [self._fix_flag(flag) for flag in flags]
         return self.add_argument(*flags, **kwargs)
 
@@ -197,19 +200,19 @@ class ArgumentParser(_ap.ArgumentParser):
 
         flags = [self._fix_flag(flag) for flag in flags]
 
-        for k in ['action', 'nargs', 'required', 'const', 'default', 'type', 'choices']:
+        for k in ["action", "nargs", "required", "const", "default", "type", "choices"]:
             if k in kwargs:
-                raise ValueError('%s= does not apply to flags' % k)
+                raise ValueError("%s= does not apply to flags" % k)
 
-        action = self.add_argument(*flags, action='store_true', **kwargs)
+        action = self.add_argument(*flags, action="store_true", **kwargs)
 
         if include_negative:
             negative_flags = self._get_negative_flags(flags)
-            kwargs.pop('dest', None)
-            kwargs.pop('help', None)
+            kwargs.pop("dest", None)
+            kwargs.pop("help", None)
             self.add_argument(
                 *negative_flags,
-                action='store_false',
+                action="store_false",
                 dest=action.dest,
                 help=_ap.SUPPRESS,
                 **kwargs
@@ -231,13 +234,12 @@ class ArgumentParser(_ap.ArgumentParser):
         :note: The default default value is an empty list.
         :note: required=True means a **non-empty** list is required.
         """
-        flags, kwargs = self._process_collection_optional(list, 'list', *flags, **kwargs)
+        flags, kwargs = self._process_collection_optional(
+            list, "list", *flags, **kwargs
+        )
         flags, kwargs = self._use_spec(*flags, is_positional=False, **kwargs)
         return self.add_argument(
-            *flags,
-            action='extend',
-            strict_default=strict_default,
-            **kwargs
+            *flags, action="extend", strict_default=strict_default, **kwargs
         )
 
     def add_positional_list(self, name=None, strict_default=True, **kwargs):
@@ -254,22 +256,19 @@ class ArgumentParser(_ap.ArgumentParser):
 
         names, kwargs = self._process_positional(name, **kwargs)
 
-        nargs = kwargs.pop('nargs', None)
+        nargs = kwargs.pop("nargs", None)
         if nargs is None:
-            nargs = '*'
-        if not isinstance(nargs, int) and nargs not in '*+':
-            raise ValueError(
-                'nargs=%s does not apply to a positional list' % nargs)
+            nargs = "*"
+        if not isinstance(nargs, int) and nargs not in "*+":
+            raise ValueError("nargs=%s does not apply to a positional list" % nargs)
 
         return self.add_argument(
-            *names,
-            action=None,
-            nargs=nargs,
-            strict_default=strict_default,
-            **kwargs
+            *names, action=None, nargs=nargs, strict_default=strict_default, **kwargs
         )
 
-    def add_dict(self, *flags, key_type=None, key_metavar=None, strict_default=True, **kwargs):
+    def add_dict(
+        self, *flags, key_type=None, key_metavar=None, strict_default=True, **kwargs
+    ):
         """
         Add an *optional* dict argument, where each item is of the form "KEY=VALUE".
         This calls ``add_argument`` with appropriate values.
@@ -291,36 +290,36 @@ class ArgumentParser(_ap.ArgumentParser):
         """
 
         # note: choices is not supported
-        if 'choices' in kwargs:
-            raise ValueError('choices= is not supported for dict')
+        if "choices" in kwargs:
+            raise ValueError("choices= is not supported for dict")
 
-        explicit_metavar = kwargs.get('metavar')
+        explicit_metavar = kwargs.get("metavar")
 
-        flags, kwargs = self._process_collection_optional(OrderedDict, 'dict', *flags, **kwargs)
+        flags, kwargs = self._process_collection_optional(
+            OrderedDict, "dict", *flags, **kwargs
+        )
         flags, kwargs = self._use_spec(*flags, is_positional=False, **kwargs)
 
         # note: choices is not supported. if it was set from spec, remove it
-        kwargs.pop('choices', None)
+        kwargs.pop("choices", None)
 
         # we use our own type, which stores key_type and value_type:
-        type = kwargs.pop('type', None)
+        type = kwargs.pop("type", None)
         type = _KeyValueType(
-            key_type, type,
-            key_metavar=key_metavar, value_metavar=kwargs.get('metavar'),
+            key_type,
+            type,
+            key_metavar=key_metavar,
+            value_metavar=kwargs.get("metavar"),
         )
 
         # if metavar was passed explicitly, we leave it as is.
         # Else, we overwrite it (even if it was set from the spec), because the spec refers to
         # value, not key=value.
         if explicit_metavar is None:
-            kwargs['metavar'] = type.get_metavar()
+            kwargs["metavar"] = type.get_metavar()
 
         return self.add_argument(
-            *flags,
-            type=type,
-            action='setitem',
-            strict_default=strict_default,
-            **kwargs
+            *flags, type=type, action="setitem", strict_default=strict_default, **kwargs
         )
 
     ################################################################################
@@ -329,11 +328,13 @@ class ArgumentParser(_ap.ArgumentParser):
     def _use_spec(self, *args, is_positional=None, **kwargs):
         if is_positional is None:
             is_positional = self._is_positional(*args)
-        type = kwargs.get('type', None)
+        type = kwargs.get("type", None)
         if type is not None:
             spec = self._spec_from_type(type)
             if spec is not None:
-                args, kwargs = self._apply_spec(spec, *args, is_positional=is_positional, **kwargs)
+                args, kwargs = self._apply_spec(
+                    spec, *args, is_positional=is_positional, **kwargs
+                )
         return args, kwargs
 
     def _apply_spec(self, spec, *args, is_positional, **kwargs):
@@ -357,13 +358,13 @@ class ArgumentParser(_ap.ArgumentParser):
             if v != spec.EMPTY:
                 kwargs.setdefault(attr, v)
 
-        for attr in ['post_process', 'choices', 'help', 'metavar', 'completer']:
+        for attr in ["post_process", "choices", "help", "metavar", "completer"]:
             _setdefault(attr)
 
-        if not kwargs.get('required', False):
-            _setdefault('default')
+        if not kwargs.get("required", False):
+            _setdefault("default")
 
-        kwargs['type'] = spec.from_string
+        kwargs["type"] = spec.from_string
 
         return args, kwargs
 
@@ -385,13 +386,14 @@ class ArgumentParser(_ap.ArgumentParser):
     }
 
     def _get_strict_default_action(self, action):
-        action_cls = self._registry_get('action', action, action)
+        action_cls = self._registry_get("action", action, action)
         if not isinstance(action_cls, type):
             return None
         for sd_action_cls, empty_value in self._STRICT_DEFAULT_ACTIONS.items():
             if issubclass(action_cls, sd_action_cls):
-                return lambda *a, **kw: \
-                    _StrictDefaultActionWrapper(action_cls(*a, **kw), empty_value, *a, **kw)
+                return lambda *a, **kw: _StrictDefaultActionWrapper(
+                    action_cls(*a, **kw), empty_value, *a, **kw
+                )
         return None
 
     ################################################################################
@@ -400,7 +402,7 @@ class ArgumentParser(_ap.ArgumentParser):
     def _pre_parse_argcomplete(self, *args, **kwargs):
         if argcomplete is None:
             return
-        if 'IntrospectiveArgumentParser' in type(self).__name__:
+        if "IntrospectiveArgumentParser" in type(self).__name__:
             # this is a nested call triggered by previous call to argcomplete.autocomplete().
             # avoid another call to argcomplete.autocomplete()
             return
@@ -414,16 +416,16 @@ class ArgumentParser(_ap.ArgumentParser):
     # misc
 
     def positional_names(self):
-        return self._argument_names(self._positionals, 'name')
+        return self._argument_names(self._positionals, "name")
 
     def positional_dests(self):
-        return self._argument_names(self._positionals, 'dest')
+        return self._argument_names(self._positionals, "dest")
 
     def optional_names(self):
-        return self._argument_names(self._optionals, 'name')
+        return self._argument_names(self._optionals, "name")
 
     def optional_dests(self):
-        return self._argument_names(self._optionals, 'dest')
+        return self._argument_names(self._optionals, "dest")
 
     def _argument_names(self, arggroup, field):
         return [getattr(action, field) for action in arggroup._group_actions]
@@ -435,20 +437,20 @@ class ArgumentParser(_ap.ArgumentParser):
         empty_required_actions = [
             _ap._get_action_name(action)
             for action in self._actions
-            if getattr(action, 'required', False)
+            if getattr(action, "required", False)
             and isinstance(action, self._REQUIRED_IS_NONEMPTY_ACTIONS)
             and not getattr(namespace, action.dest, None)
         ]
         if empty_required_actions:
             self.error(
-                _ap._('the following arguments are required: %s') %
-                ', '.join(empty_required_actions)
+                _ap._("the following arguments are required: %s")
+                % ", ".join(empty_required_actions)
             )
 
     def _run_post_processors(self, namespace):
         for action in self._actions:
             arg_name = action.dest
-            post_process = getattr(action, 'post_process', None)
+            post_process = getattr(action, "post_process", None)
             if post_process is None:
                 continue
             try:
@@ -463,29 +465,31 @@ class ArgumentParser(_ap.ArgumentParser):
         names, kwargs = self._use_spec(*names, is_positional=True, **kwargs)
 
         if names and names[0] and names[0][0] in self.prefix_chars:
-            raise ValueError('name of positional must not start with %r' % self.prefix_chars)
+            raise ValueError(
+                "name of positional must not start with %r" % self.prefix_chars
+            )
 
-        for k in ['action', 'required']:
+        for k in ["action", "required"]:
             if k in kwargs:
-                raise ValueError('%s= does not apply to positionals' % k)
+                raise ValueError("%s= does not apply to positionals" % k)
 
         return names, kwargs
 
     def _process_collection_optional(self, coll_cls, coll_cls_name, *flags, **kwargs):
 
-        for k in ['action']:
+        for k in ["action"]:
             if k in kwargs:
-                raise ValueError('%s= does not apply to %ss' % (k, coll_cls_name))
+                raise ValueError("%s= does not apply to %ss" % (k, coll_cls_name))
 
         # nargs defaults to '+' (not '*', providing the flag with no value is just bad practice)
-        nargs = kwargs.pop('nargs', None)
+        nargs = kwargs.pop("nargs", None)
         if nargs is None:
-            nargs = '+'
-        if nargs == '?':
-            raise ValueError('nargs=%s does not apply to %ss' % (nargs, coll_cls_name))
+            nargs = "+"
+        if nargs == "?":
+            raise ValueError("nargs=%s does not apply to %ss" % (nargs, coll_cls_name))
 
         # default to an empty collection:
-        default = kwargs.pop('default', None)
+        default = kwargs.pop("default", None)
         if default is None:
             default = coll_cls()
 
@@ -513,9 +517,9 @@ class ArgumentParser(_ap.ArgumentParser):
 
     def _get_negative_flags(self, flags):
         long_flags = [
-            f for f in flags
-            if len(f) >= 2
-            and f[0] in self.prefix_chars and f[1] in self.prefix_chars
+            f
+            for f in flags
+            if len(f) >= 2 and f[0] in self.prefix_chars and f[1] in self.prefix_chars
         ]
         if long_flags:
             # e.g. --foo   -->   --no-foo
@@ -528,7 +532,7 @@ class ArgumentParser(_ap.ArgumentParser):
             assert f[0] in self.prefix_chars, flags
             prefix = f[0] * 2
             suffix = f[1:]
-        return ['%sno-%s' % (prefix, suffix)]
+        return ["%sno-%s" % (prefix, suffix)]
 
     def _is_positional(self, *args):
         # NOTE: based on code from base class
@@ -539,22 +543,22 @@ class ArgumentParser(_ap.ArgumentParser):
         if not args:
             return True
         if len(args) == 1:
-            a, = args
+            (a,) = args
             if not a or a[0] not in self.prefix_chars:
                 return True
         return False
 
-    def _generate_descrption(self, stack_depth):
+    def _generate_description(self, stack_depth):
         try:
             stack = inspect.stack()
             caller_frame = stack[stack_depth + 1]
-            raw_doc = caller_frame.frame.f_globals['__doc__'].strip()
+            raw_doc = caller_frame.frame.f_globals["__doc__"].strip()
             lines = raw_doc.splitlines()
             # return text up to the first blank line:
-            i = lines.index('')
+            i = lines.index("")
             if i >= 0:
                 lines = lines[:i]
-            return '\n'.join(lines)
+            return "\n".join(lines)
         except (KeyError, IndexError, ValueError, TypeError):
             return None
 

@@ -12,7 +12,8 @@ You can simply start by replacing your import lines::
 try:
     import os as _os
     import shutil as _shutil
-    _os.environ.setdefault('COLUMNS', str(_shutil.get_terminal_size().columns))
+
+    _os.environ.setdefault("COLUMNS", str(_shutil.get_terminal_size().columns))
 except Exception:
     pass
 

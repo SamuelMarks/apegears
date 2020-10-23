@@ -13,7 +13,9 @@ import func_argparse
 from func_argparse import (
     ArgparserGenerator as _ArgparserGenerator,
     ArgumentSpec as _ArgumentSpec,
-    _is_option_type, _GenericAlias)
+    _is_option_type,
+    _GenericAlias,
+)
 
 from .parser import ArgumentParser
 
@@ -21,8 +23,8 @@ from .parser import ArgumentParser
 ################################################################################
 # Definition of the our custom ArgumentParser generator
 
-class ApegearsArgumentSpec(_ArgumentSpec):
 
+class ApegearsArgumentSpec(_ArgumentSpec):
     def __init__(self, adder_name, *flags, **kwargs):
         self.adder_name = adder_name
         super().__init__(*flags, **kwargs)
@@ -36,7 +38,9 @@ class ApegearsGenerator(_ArgparserGenerator):
 
     ArgParser = ArgumentParser
 
-    def _gen_param_arguments(self, arg_name, arg_type, doc, default, has_default, prefix):
+    def _gen_param_arguments(
+        self, arg_name, arg_type, doc, default, has_default, prefix
+    ):
 
         a = arg_name
         t = arg_type
@@ -50,7 +54,7 @@ class ApegearsGenerator(_ArgparserGenerator):
         )
 
         if t is bool:
-            adder = 'add_flag'
+            adder = "add_flag"
 
         else:
 
@@ -62,28 +66,30 @@ class ApegearsGenerator(_ArgparserGenerator):
                     default = None
                     has_default = True
 
-            kwargs['required'] = required
+            kwargs["required"] = required
             if has_default:
-                kwargs['default'] = default
+                kwargs["default"] = default
 
-            adder = 'add_optional'
+            adder = "add_optional"
 
             # try list option
             elem_t = _get_list_contained_type(t)
             if elem_t is not None:
-                adder = 'add_list'
+                adder = "add_list"
                 kwargs.update(type=_get_type(elem_t), required=False)
 
             else:
                 # try dict option
                 ktvt = _get_dict_contained_types(t)
                 if ktvt is not None:
-                    adder = 'add_dict'
+                    adder = "add_dict"
                     kt, vt = ktvt
-                    kwargs.update(key_type=_get_type(kt), type=_get_type(vt), required=False)
+                    kwargs.update(
+                        key_type=_get_type(kt), type=_get_type(vt), required=False
+                    )
 
                 else:
-                    kwargs['type'] = _get_type(t)
+                    kwargs["type"] = _get_type(t)
 
         yield ApegearsArgumentSpec(adder, *flags, **kwargs)
 

@@ -14,6 +14,7 @@ except ImportError as e:
 
 ################################################################################
 
+
 def add_log_levels_option(parser, *args, force=False, **kwargs):
     if lo99ing is None:
         if force:
@@ -22,17 +23,17 @@ def add_log_levels_option(parser, *args, force=False, **kwargs):
 
     return parser.add_dict(
         *args,
-        type='log_level',
-        key_metavar='LOGGER',
+        type="log_level",
+        key_metavar="LOGGER",
         post_process=_post_process_log_levels,
         **kwargs
     )
 
 
 def _post_process_log_levels(cli_levels):
-    logger = lo99ing.get_logger('lo99ing')
+    logger = lo99ing.get_logger("lo99ing")
     for logger_name, level in cli_levels.items():
-        logger.info('LOG LEVEL OVERRIDE: %s = %s', logger_name, level)
+        logger.info("LOG LEVEL OVERRIDE: %s = %s", logger_name, level)
         lo99ing.set_log_level_override(logger_name, level)
     return cli_levels
 
